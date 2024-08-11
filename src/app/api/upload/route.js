@@ -12,7 +12,7 @@ export async function POST(request) {
     console.log('Received content:', content);
 
     // Create a prompt based on content type
-    const prompt = `Based on the following ${type} code snippets, please generate 2-3 additional lines of code that improve or extend the current implementation. Don't include the current code snippet. Code: \n\n${content}`;
+    const prompt = `Based on the following ${type} code snippets, please generate additional lines of code that improve or extend the current implementation. Don't include the current code snippet. Code: \n\n${content}`;
     console.log('Generated prompt:', prompt);
 
     // Generate suggestions using Google Generative AI

@@ -1,33 +1,22 @@
-import { Flex, Box, Button, Heading } from '@chakra-ui/react';
-import { signOut, useSession } from 'next-auth/react';
+import { useState } from 'react';
+import { Box, Flex, Heading, Button, Spacer, Link } from '@chakra-ui/react';
 
-export default function Navbar() {
-  const { data: session } = useSession();
-
+export default function NavBar({ isAuthenticated, onLogin, onLogout }) {
   return (
-    <Flex
-      as="nav"
-      align="center"
-      justify="space-between"
-      wrap="wrap"
-      padding="1.5rem"
-      bg="teal.500"
-      color="white"
-    >
-      <Box>
-        <Heading size="lg">Real-Time Code Editor</Heading>
-      </Box>
-      <Box>
-        {session ? (
-          <Button onClick={() => signOut()} colorScheme="teal" variant="outline">
-            Logout
-          </Button>
-        ) : (
-          <Button href="/login" colorScheme="teal" variant="outline">
-            Login
-          </Button>
-        )}
-      </Box>
+    <Flex as="nav" bg="teal.500" color="white" p={4} align="center">
+      <Heading size="md">My App</Heading>
+      <Spacer />
+      <Link href="/" p={2} _hover={{ textDecoration: 'none', bg: 'teal.600' }}>Home</Link>
+      <Link href="/about" p={2} _hover={{ textDecoration: 'none', bg: 'teal.600' }}>About</Link>
+      {isAuthenticated ? (
+        <Button onClick={onLogout} colorScheme="teal" variant="outline" ml={4}>
+          Logout
+        </Button>
+      ) : (
+        <Button onClick={onLogin} colorScheme="teal" variant="outline" ml={4}>
+          Login
+        </Button>
+      )}
     </Flex>
   );
 }

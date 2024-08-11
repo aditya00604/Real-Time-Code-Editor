@@ -5,16 +5,24 @@ import { Box, Button, Select, Textarea, VStack, Flex } from '@chakra-ui/react';
 export default function PreviewPane({ html, css, js, autoRun }) {
   const [consoleOutput, setConsoleOutput] = useState('');
   const [screenSize, setScreenSize] = useState('desktop');
+  const [consoleVisible, setConsoleVisible] = useState(true); // New state for console visibility
 
-  // Function to capture console logs from the iframe
-  const captureConsoleLogs = (iframe) => {
+  // Function to capture console logs and alerts from the iframe
+  const captureConsoleAndAlerts = (iframe) => {
     const iframeWindow = iframe.contentWindow;
     const originalConsoleLog = iframeWindow.console.log;
+    const originalAlert = iframeWindow.alert;
 
     // Create a custom log function within the iframe
     iframeWindow.console.log = (...args) => {
-      setConsoleOutput((prev) => `${prev}\n${args.join(' ')}`);
+      setConsoleOutput((prev) => `${prev}\n[Console] ${args.join(' ')}`);
       originalConsoleLog.apply(iframeWindow.console, args);
+    };
+
+    // Create a custom alert function within the iframe
+    iframeWindow.alert = (message) => {
+      setConsoleOutput((prev) => `${prev}\n[Alert] ${message}`);
+      originalAlert.call(iframeWindow, message);
     };
   };
 
@@ -74,14 +82,14 @@ export default function PreviewPane({ html, css, js, autoRun }) {
     if (autoRun) {
       const iframe = document.getElementById('previewFrame');
       if (iframe) {
-        captureConsoleLogs(iframe);
+        captureConsoleAndAlerts(iframe);
       }
     }
   }, [autoRun, js]);
 
   return (
     <VStack spacing={4} align="stretch" h="100%">
-      <Box flex="1">
+      <Box flex="1" border='1px'>
         <iframe
           id="previewFrame"
           srcDoc={previewContent}
@@ -95,11 +103,14 @@ export default function PreviewPane({ html, css, js, autoRun }) {
             <Button onClick={() => {
               const iframe = document.getElementById('previewFrame');
               if (iframe) {
-                captureConsoleLogs(iframe);
+                captureConsoleAndAlerts(iframe);
               }
             }} colorScheme="teal" mr={2}>Run Console</Button>
             <Button onClick={refreshIframe} colorScheme="blue" mr={2}>Refresh</Button>
             <Button onClick={downloadCode} colorScheme="teal" mr={2}>Download Code</Button>
+            <Button onClick={() => setConsoleVisible(prev => !prev)} colorScheme="purple" ml={2}>
+              {consoleVisible ? 'Hide Console' : 'Show Console'}
+            </Button>
           </Flex>
           <Select
             value={screenSize}
@@ -110,15 +121,17 @@ export default function PreviewPane({ html, css, js, autoRun }) {
             <option value="tablet">Tablet (768px)</option>
             <option value="desktop">Desktop (1024px)</option>
           </Select>
-          <Textarea
-            value={consoleOutput}
-            isReadOnly
-            placeholder="Console output will appear here..."
-            height="150px"
-            resize="none"
-            fontFamily="monospace"
-            bg="gray.50"
-          />
+          {consoleVisible && (
+            <Textarea
+              value={consoleOutput}
+              isReadOnly
+              placeholder="Console output will appear here..."
+              height="150px"
+              resize="none"
+              fontFamily="monospace"
+              bg="gray.50"
+            />
+          )}
         </Flex>
       </Box>
     </VStack>
